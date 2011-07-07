@@ -14,7 +14,24 @@ import scala.collection.JavaConversions._
 System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
 System.setProperty("http.proxyPort","8080")
 
-println(Koop.menu)
+println(Gothia.menu)
+
+object Gothia {
+  var menu : List[List[String]] = List()
+  val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
+  val sub = xml \\ "table"
+  var iter = Source.fromString(sub.text).getLines
+  iter = iter.dropWhile(!_.contains("ndag"))
+  iter = iter.takeWhile(!_.contains("Veckans"))
+  for (line <- iter) {
+    if (line.trim.endsWith("dag")) {
+      menu = List() :: menu
+    } else if (line.trim != "") {
+      val hd :: menutl = menu
+      menu = (line.trim :: hd) :: menutl
+    }
+  }
+}
 
 object Koop {
   val ignore = Set("80:-", "Inkl sallad", "TAKE AWAY", "Dagens Meny")
