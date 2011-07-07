@@ -14,7 +14,16 @@ import scala.collection.JavaConversions._
 System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
 System.setProperty("http.proxyPort","8080")
 
-println(Gothia.menu)
+val g = Gothia.menu.iterator
+val k = Koop.menu.iterator
+List("Mandag", "Tisdag", "Onsdag", "Torsdag", "Fredag").foreach((dag) => {
+  println("=== " + dag + " ===")
+  println("== Kooperativet ==")
+  k.next.foreach(println)
+  println("== Gothia ==")
+  g.next.foreach(println)
+  println
+})
 
 object Gothia {
   var menu : List[List[String]] = List()
@@ -31,6 +40,7 @@ object Gothia {
       menu = (line.trim :: hd) :: menutl
     }
   }
+  menu = menu.map(_.reverse).reverse
 }
 
 object Koop {
@@ -44,6 +54,7 @@ object Koop {
 	          !ignore.exists(node.text.contains(_)))
 	       yield node.text.trim).toList :: menu
   }
+  menu = menu.reverse
 }
 
 object Web {
