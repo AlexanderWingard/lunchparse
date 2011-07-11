@@ -1,7 +1,7 @@
 #!/bin/sh
 L=`dirname $0`/lib
 cp=`echo $L/*.jar|sed 's/ /:/g'`
-exec scala -savecompiled -classpath $cp $0 $@
+exec scala -Dfile.encoding=UTF-8 -savecompiled -classpath $cp $0 $@
 !#
 // /* */ */
 
