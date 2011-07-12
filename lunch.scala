@@ -14,33 +14,14 @@ import scala.collection.JavaConversions._
 System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
 System.setProperty("http.proxyPort","8080")
 
-val g = Gothia.menu.iterator
-val k = Koop.menu.iterator
-List("Mandag", "Tisdag", "Onsdag", "Torsdag", "Fredag").foreach((dag) => {
-  println("=== " + dag + " ===")
-  println("== Kooperativet ==")
-  k.next.foreach(println)
-  println("== Gothia ==")
-  g.next.foreach(println)
-  println
-})
+Koop
+Gothia
 
 object Gothia {
   var menu : List[List[String]] = List()
   val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
   val sub = xml \\ "table"
-  var iter = Source.fromString(sub.text).getLines
-  iter = iter.dropWhile(!_.contains("ndag"))
-  iter = iter.takeWhile(!_.contains("Veckans"))
-  for (line <- iter) {
-    if (line.trim.endsWith("dag")) {
-      menu = List() :: menu
-    } else if (line.trim != "") {
-      val hd :: menutl = menu
-      menu = (line.trim :: hd) :: menutl
-    }
-  }
-  menu = menu.map(_.reverse).reverse
+  trav(sub).foreach(println)
 }
 
 object Koop {
@@ -48,14 +29,20 @@ object Koop {
   var menu : List[List[String]] = List()
   for (i <- 1 to 5) {
     val xml = Web.get("http://www.kooperativet.se/printversion.php?p=meny&d=" + i)
-    val sub = xml \ "body" \ "div" \ "_"
-    menu = (for(node <- sub
-	       if node.text != "" &&
-	          !ignore.exists(node.text.contains(_)))
-	       yield node.text.trim).toList :: menu
+    val sub = xml \ "body" \ "div"
+    trav(sub).foreach(println)
   }
-  menu = menu.reverse
 }
+
+ def trav(nodes : NodeSeq, acc : List[String] = List()) : Seq[String] = {
+    nodes.flatMap((node) => node match {
+      case Text(text) =>
+	val format = text.replaceAll("\240", " ").lines.map(_.trim).mkString
+      format :: acc
+      case _ =>
+	trav(node.child, acc)
+  }).filter(!_.isEmpty)
+ }
 
 object Web {
   val parserFactory = new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
