@@ -16,33 +16,47 @@ System.setProperty("http.proxyPort","8080")
 
 Koop
 Gothia
+GotaAlv
 
 object Gothia {
-  var menu : List[List[String]] = List()
   val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
   val sub = xml \\ "table"
-  trav(sub).foreach(println)
+  print(trav(sub).reverse.mkString)
 }
 
 object Koop {
-  val ignore = Set("80:-", "Inkl sallad", "TAKE AWAY", "Dagens Meny")
-  var menu : List[List[String]] = List()
   for (i <- 1 to 5) {
     val xml = Web.get("http://www.kooperativet.se/printversion.php?p=meny&d=" + i)
     val sub = xml \ "body" \ "div"
-    trav(sub).foreach(println)
+    print(trav(sub).reverse.mkString)
   }
 }
 
- def trav(nodes : NodeSeq, acc : List[String] = List()) : Seq[String] = {
-    nodes.flatMap((node) => node match {
-      case Text(text) =>
-	val format = text.replaceAll("\240", " ").lines.map(_.trim).mkString
+object GotaAlv {
+  val xml = Web.get("http://www.kvartersmenyn.se/start/rest/11579")
+  val sub = xml \\ "table"
+  print(trav(sub).reverse.mkString)
+}
+
+def trav(nodes : NodeSeq, acc : List[String] = List()) : List[String] = {
+  nodes.foldLeft(acc) ((acc, node) => (node match {
+    case Text(text) =>
+      val format = text.replaceAll("\240", " ").lines.map(_.trim).mkString + " "
+    if (format.trim != "")
       format :: acc
-      case _ =>
-	trav(node.child, acc)
-  }).filter(!_.isEmpty)
- }
+    else
+      acc
+    case _ if node.label == "p" || node.label == "h2" || node.label == "strong" || node.label == "u"  =>
+      acc match {
+	case "\n" :: rest =>
+	  trav(node.child, acc)
+	case other =>
+	  trav(node.child, "\n" :: acc)
+      }
+    case _ =>
+      trav(node.child, acc)
+  }))
+}
 
 object Web {
   val parserFactory = new org.ccil.cowan.tagsoup.jaxp.SAXFactoryImpl
@@ -62,4 +76,3 @@ object Cmd {
     source.getLines.foreach(println)
   }
 }
-
