@@ -11,7 +11,17 @@ object Lunch {
   System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
   System.setProperty("http.proxyPort", "8080")
 
-  def trav(nodes: NodeSeq, acc: List[String] = List()): List[String] = {
+  def gotaAlv = {
+    val xml = Web.get("http://www.kvartersmenyn.se/start/rest/11579")
+    trav(xml \\ "table").reverse
+  }
+
+  def gothia = {
+    val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
+    trav(xml \\ "table").reverse
+  }
+
+  private def trav(nodes: NodeSeq, acc: List[String] = List()): List[String] = {
     nodes.foldLeft(acc)((acc, node) => (node match {
       case Text(text) =>
         val format = text.replaceAll("\240", " ").lines.map(_.trim).mkString + " "
@@ -30,27 +40,12 @@ object Lunch {
         trav(node.child, acc)
     }))
   }
-  def koop = trav(GotaAlv.get).reverse.mkString
-}
-
-object Gothia {
-  def get = {
-    val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
-    xml \\ "table"
-  }
 }
 
 object Koop {
   for (i <- 1 to 5) {
     val xml = Web.get("http://www.kooperativet.se/printversion.php?p=meny&d=" + i)
     val sub = xml \ "body" \ "div"
-  }
-}
-
-object GotaAlv {
-  def get = {
-    val xml = Web.get("http://www.kvartersmenyn.se/start/rest/11579")
-    xml \\ "table"
   }
 }
 
