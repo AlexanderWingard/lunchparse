@@ -10,16 +10,40 @@ import scala.collection.JavaConversions._
 object Lunch {
   System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
   System.setProperty("http.proxyPort", "8080")
+  val days = List("M\345ndag ", "Tisdag ", "Onsdag ", "Torsdag ", "Fredag ")
+
+  def menu = {
+    days.foldLeft((gotaAlv, gothia, NodeSeq.Empty))((acc, day) => {
+      val (gota :: gotatl, goth :: gothtl, res) = acc
+      val res2 = res ++ <div><h2>{day}</h2><h3>Ericsson Restaurant</h3><pre>{gota.mkString("\n")}</pre><h3>Gothia</h3><pre>{goth.mkString("\n")}</pre></div>
+      (gotatl, gothtl, res2)
+    })._3
+  }
 
   def gotaAlv = {
     val xml = Web.get("http://www.kvartersmenyn.se/start/rest/11579")
     val lineBreaks = Set("p", "h2", "strong", "u")
-    trav(xml \\ "table", lineBreaks).reverse
+    val str = trav(xml \\ "table", lineBreaks).reverse
+    val lines = Source.fromString(str.dropWhile(!days.contains(_)).takeWhile(!_.contains("Varje dag")).mkString).getLines
+    group(lines)
   }
 
   def gothia = {
     val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
-    trav(xml \\ "table", Set("p", "br")).reverse
+    val str = trav(xml \\ "table", Set("p", "br")).reverse
+    val lines = Source.fromString(str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Veckans")).mkString).getLines
+    group(lines)
+  }
+
+  private def group(lines : Iterator[String]) = {
+    lines.foldLeft(List() : List[List[String]])((acc, line) => {
+      if(days.contains(line)) {
+	List() :: acc
+      } else {
+	val hd :: tl = acc
+	(line :: hd) :: tl
+      }
+    }).map(_.reverse).reverse
   }
 
   private def trav(nodes: NodeSeq, lineBreaks: Set[String], acc: List[String] = List()): List[String] = {
@@ -62,10 +86,3 @@ object Web {
   }
 }
 
-object Cmd {
-  def apply(cmd: List[String]) = {
-    val process = new ProcessBuilder(cmd).start
-    val source = Source.fromInputStream(process.getInputStream)
-    source.getLines.foreach(println)
-  }
-}
