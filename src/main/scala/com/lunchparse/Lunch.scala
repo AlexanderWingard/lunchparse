@@ -13,15 +13,16 @@ object Lunch {
 
   def gotaAlv = {
     val xml = Web.get("http://www.kvartersmenyn.se/start/rest/11579")
-    trav(xml \\ "table").reverse
+    val lineBreaks = Set("p", "h2", "strong", "u")
+    trav(xml \\ "table", lineBreaks).reverse
   }
 
   def gothia = {
     val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
-    trav(xml \\ "table").reverse
+    trav(xml \\ "table", Set("p", "br")).reverse
   }
 
-  private def trav(nodes: NodeSeq, acc: List[String] = List()): List[String] = {
+  private def trav(nodes: NodeSeq, lineBreaks: Set[String], acc: List[String] = List()): List[String] = {
     nodes.foldLeft(acc)((acc, node) => (node match {
       case Text(text) =>
         val format = text.replaceAll("\240", " ").lines.map(_.trim).mkString + " "
@@ -29,15 +30,15 @@ object Lunch {
           format :: acc
         else
           acc
-      case _ if node.label == "p" || node.label == "h2" || node.label == "strong" || node.label == "u" =>
+      case _ if lineBreaks.contains(node.label) =>
         acc match {
           case "\n" :: rest =>
-            trav(node.child, acc)
+            trav(node.child, lineBreaks, acc)
           case other =>
-            trav(node.child, "\n" :: acc)
+            trav(node.child, lineBreaks, "\n" :: acc)
         }
       case _ =>
-        trav(node.child, acc)
+        trav(node.child, lineBreaks, acc)
     }))
   }
 }
