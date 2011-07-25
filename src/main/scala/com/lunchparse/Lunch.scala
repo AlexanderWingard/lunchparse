@@ -35,6 +35,14 @@ object Lunch {
     group(lines)
   }
 
+  def bistrot = {
+    val xml = Web.get("http://www.lindholmen.se/sv/dagens-lunch?keys=&field_restaurant_nid=166&date_filter%5Bvalue%5D%5Byear%5D=2011&date_filter%5Bvalue%5D%5Bmonth%5D=6&date_filter%5Bvalue%5D%5Bday%5D=1")
+    //val str = trav(xml \\ "table", Set("td")).reverse
+    val table = (xml \\ "tbody")(0) \ "tr"
+    val tds = table.flatMap((x) => (x \ "td")(1) ++ <br/>)
+    trav(tds, Set("br")).reverse
+  }
+
   private def group(lines : Iterator[String]) = {
     lines.foldLeft(List() : List[List[String]])((acc, line) => {
       if(days.contains(line)) {

@@ -12,6 +12,6 @@ import com.lunchparse.Lunch
 
 class LunchSnippet {
   def showLunch(in : NodeSeq) : NodeSeq =
-    <pre>{Lunch.menu}</pre>
+    <pre>{Lunch.bistrot}</pre>
 }
 
