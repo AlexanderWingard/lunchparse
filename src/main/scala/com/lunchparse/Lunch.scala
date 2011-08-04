@@ -8,6 +8,7 @@ import scala.collection
 import scala.collection.JavaConversions._
 
 import java.util.{TimeZone, Calendar}
+
 object Lunch {
   System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
   System.setProperty("http.proxyPort", "8080")
@@ -19,12 +20,13 @@ object Lunch {
     cal.setWeekDate(year, week, Calendar.MONDAY)
     cal
   }
+
   def menu = {
-    days.foldLeft((gotaAlv, gothia, NodeSeq.Empty))((acc, day) => {
-      val (gota :: gotatl, goth :: gothtl, res) = acc
-      val res2 = res ++ <div><h2>{day}</h2><h3>Ericsson Restaurant</h3><pre>{gota.mkString("\n")}</pre><h3>Gothia</h3><pre>{goth.mkString("\n")}</pre></div>
-      (gotatl, gothtl, res2)
-    })._3
+    days.foldLeft((gotaAlv, gothia, aran, NodeSeq.Empty))((acc, day) => {
+      val (gota :: gotatl, goth :: gothtl, ar :: artl, res) = acc
+      val res2 = res ++ <div><h2>{day}</h2><h3>Ericsson Restaurant</h3><pre>{gota.mkString("\n").toLowerCase}</pre><h3>Gothia</h3><pre>{goth.mkString("\n").toLowerCase}</pre><h3>Aran</h3><pre>{ar.mkString("\n").toLowerCase}</pre></div>
+      (gotatl, gothtl, artl, res2)
+    })._4
   }
 
   def gotaAlv = {
@@ -50,6 +52,13 @@ object Lunch {
     trav(tds, Set("br")).reverse
   }
 
+  def aran = {
+    val xml = Web.get("http://www.rams.se/index.php?page=mod_matsedel", "ISO-8859-1")
+    val str = trav(xml \\ "table", Set("tr")).reverse
+    val lines = Source.fromString(str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Dagens Pasta")).mkString).getLines
+    group(lines)
+  }
+
   private def group(lines : Iterator[String]) = {
     lines.foldLeft(List() : List[List[String]])((acc, line) => {
       if(days.contains(line)) {
@@ -61,7 +70,8 @@ object Lunch {
     }).map(_.reverse).reverse
   }
 
-  private def trav(nodes: NodeSeq, lineBreaks: Set[String], acc: List[String] = List()): List[String] = {
+  def trav(nodes : NodeSeq, lineBreaks : Set[String]) : List[String] = trav(nodes, lineBreaks, List())
+  private def trav(nodes: NodeSeq, lineBreaks: Set[String], acc: List[String]): List[String] = {
     nodes.foldLeft(acc)((acc, node) => (node match {
       case Text(text) =>
         val format = text.replaceAll("\240", " ").lines.map(_.trim).mkString + " "
@@ -94,9 +104,9 @@ object Web {
   val parser = parserFactory.newSAXParser()
   val adapter = new scala.xml.parsing.NoBindingFactoryAdapter
 
-  def get(url: String) = {
+  def get(url: String, encoding : String = "UTF-8") = {
     val source = new org.xml.sax.InputSource(url)
-    source.setEncoding("UTF-8")
+    source.setEncoding(encoding)
     adapter.loadXML(source, parser)
   }
 }
