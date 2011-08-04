@@ -7,11 +7,18 @@ import java.net.URL
 import scala.collection
 import scala.collection.JavaConversions._
 
+import java.util.{TimeZone, Calendar}
 object Lunch {
   System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
   System.setProperty("http.proxyPort", "8080")
   val days = List("M\345ndag ", "Tisdag ", "Onsdag ", "Torsdag ", "Fredag ")
 
+  def date(week : Int, year : Int) = {
+    val tz = TimeZone.getTimeZone("Europe/Stockholm")
+    val cal = Calendar.getInstance(tz)
+    cal.setWeekDate(year, week, Calendar.MONDAY)
+    cal
+  }
   def menu = {
     days.foldLeft((gotaAlv, gothia, NodeSeq.Empty))((acc, day) => {
       val (gota :: gotatl, goth :: gothtl, res) = acc

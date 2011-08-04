@@ -13,9 +13,8 @@ class LiftProject(info: ProjectInfo) extends DefaultWebProject(info) {
   override def libraryDependencies = Set(
     "net.liftweb" %% "lift-webkit" % liftVersion % "compile",
     "org.mortbay.jetty" % "jetty" % "6.1.22" % "test",
-    "junit" % "junit" % "4.5" % "test",
     "ch.qos.logback" % "logback-classic" % "0.9.26",
-    "org.scala-tools.testing" %% "specs" % "1.6.8" % "test",
-    "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2"
+    "org.ccil.cowan.tagsoup" % "tagsoup" % "1.2",
+    "org.scalatest" % "scalatest_2.9.0" % "1.6.1"
   ) ++ super.libraryDependencies
 }
