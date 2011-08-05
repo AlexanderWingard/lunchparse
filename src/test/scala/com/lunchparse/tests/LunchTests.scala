@@ -8,23 +8,26 @@ import java.util.Calendar
 
 class LunchTest extends Spec with ShouldMatchers {
 
-  describe ("Date Parsing") {
+  describe("Date Parsing") {
     it("Should get the correct dates from week") {
       val res = Lunch.date(31, 2011)
       res.get(Calendar.YEAR) should equal (2011)
       res.get(Calendar.MONTH) should equal (Calendar.AUGUST)
       res.get(Calendar.DAY_OF_MONTH) should equal (1)
     }
-
-    it("Should return text version correctly") {
+  }
+  describe("HTML to text parsing") {
+    it("Should filter out linebreaks") {
       val in = <div>
-		<p>Måndag</p>
+		Måndag<br/>
 		<p>Måndagsgris</p>
+		<p><br/><div>apan</div></p>
 		<p>Tisdag</p>
+		<p></p>
 		<p>Tisdagsko</p>
 	       </div>
-      val result = Lunch.trav(in, Set("p"))
-      val expected = List("Måndag", "\n", "Måndagsgris", "\n", "Tisdag", "\n", "Tisdagsko")
+      val result = Lunch.trav(in, Set("p", "br"))
+      val expected = List("Måndag", "Måndagsgris", "apan", "Tisdag", "Tisdagsko")
       result should equal (expected)
     }
   }
