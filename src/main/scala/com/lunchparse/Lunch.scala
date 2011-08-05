@@ -8,17 +8,23 @@ import scala.collection
 import scala.collection.JavaConversions._
 
 import java.util.{ TimeZone, Calendar }
+import java.text.SimpleDateFormat
 
 object Lunch {
   System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
   System.setProperty("http.proxyPort", "8080")
-  val days = List("M\345ndag ", "Tisdag ", "Onsdag ", "Torsdag ", "Fredag ")
+  val days = List("M\345ndag", "Tisdag", "Onsdag", "Torsdag", "Fredag")
 
   def date(week: Int, year: Int) = {
     val tz = TimeZone.getTimeZone("Europe/Stockholm")
+    val sdf = new SimpleDateFormat("dd/MM")
     val cal = Calendar.getInstance(tz)
     cal.setWeekDate(year, week, Calendar.MONDAY)
-    cal
+    days.map((day) => {
+      val str = sdf.format(cal.getTime())
+      cal.add(Calendar.DAY_OF_WEEK, 1)
+      (day,str)
+    })
   }
 
   def menu = {
