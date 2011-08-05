@@ -24,6 +24,7 @@ class LunchTest extends Spec with ShouldMatchers {
 		<p><br/><div>apan</div></p>
 		<p>Tisdag</p>
 		<p></p>
+		<p><p></p></p>
 		<p>Tisdagsko</p>
 	       </div>
       val result = Lunch.trav(in, Set("p", "br"))

@@ -84,12 +84,13 @@ object Lunch {
             } else {
               (List(format), false)
             }
-          } else
-            accin
+          } else {
+	    accin
+	  }
         case _ if lineBreaks.contains(node.label) && !broken =>
           trav(node.child, lineBreaks, true, "" :: acc)
         case _ =>
-          trav(node.child, lineBreaks, false, acc)
+          trav(node.child, lineBreaks, broken, acc)
       }
     })
   }
