@@ -31,5 +31,13 @@ class LunchTest extends Spec with ShouldMatchers {
       val expected = List("Måndag", "Måndagsgris", "apan", "Tisdag", "Tisdagsko")
       result should equal (expected)
     }
+
+    it("Should replace xml whitespace with a space") {
+      val in = <div>Hello
+	       World</div>
+      val result = Lunch.trav(in, Set())
+      val expected = List("Hello World")
+      result should equal (expected)
+    }
   }
 }
