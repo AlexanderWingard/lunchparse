@@ -10,12 +10,12 @@ class LunchTest extends Spec with ShouldMatchers {
 
   describe("Date Parsing") {
     it("Should get the correct dates from week") {
-      val result = Lunch.date(32, 2011)
-      val expected = List(("Måndag", "08/08"),
-			  ("Tisdag", "09/08"),
-			  ("Onsdag", "10/08"),
-			  ("Torsdag", "11/08"),
-			  ("Fredag", "12/08"))
+      val result = Lunch.date(35, 2011)
+      val expected = List(("Måndag", "29/08"),
+			  ("Tisdag", "30/08"),
+			  ("Onsdag", "31/08"),
+			  ("Torsdag", "01/09"),
+			  ("Fredag", "02/09"))
       result should equal (expected)
     }
   }
