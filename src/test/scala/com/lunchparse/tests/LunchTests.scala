@@ -35,6 +35,17 @@ class LunchTest extends Spec with ShouldMatchers {
       result should equal (expected)
     }
 
+    it("Should linebreak at different levels") {
+      val in = <div><em><u>Tisdag</u></em>
+	       <strong>HELSTEKT KOTLETTRAD</strong>
+	       m. timjansky &amp; stekt potatis
+	       <strong>CHILI CON CARNE </strong>m. ris<br/>
+	       </div>
+      println(in)
+      val result = Lunch.trav(in, Set("em", "strong"))
+      result should equal (List())
+    }
+
     it("Should replace xml whitespace with a space") {
       val in = <div>Hello
 	       World</div>
