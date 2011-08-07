@@ -19,7 +19,9 @@ object Lunch {
     val tz = TimeZone.getTimeZone("Europe/Stockholm")
     val sdf = new SimpleDateFormat("dd/MM")
     val cal = Calendar.getInstance(tz)
-    cal.setWeekDate(year, week, Calendar.MONDAY)
+    cal.set(Calendar.YEAR, year)
+    cal.set(Calendar.WEEK_OF_YEAR, week + 1)
+    cal set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
     days.map((day) => {
       val str = sdf.format(cal.getTime())
       cal.add(Calendar.DAY_OF_WEEK, 1)
