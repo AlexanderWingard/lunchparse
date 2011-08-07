@@ -88,7 +88,7 @@ object Lunch {
           if (format != "") {
             if (acc.length > 0) {
               val hd :: tl = acc
-              ((format + hd) :: tl, false)
+              ((hd + " " + format).trim :: tl, false)
             } else {
               (List(format), false)
             }
