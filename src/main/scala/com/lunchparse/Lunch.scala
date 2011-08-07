@@ -40,15 +40,15 @@ object Lunch {
   def gotaAlv = {
     val xml = Web.get("http://www.kvartersmenyn.se/start/rest/11579")
     val lineBreaks = Set("p", "h2", "strong", "u")
-    val str = trav(xml \\ "table", lineBreaks).reverse
-    val lines = Source.fromString(str.dropWhile(!days.contains(_)).takeWhile(!_.contains("Varje dag")).mkString).getLines
+    val str = trav(xml \\ "table", lineBreaks)
+    val lines = str.dropWhile(!days.contains(_)).takeWhile(!_.contains("Varje dag"))
     group(lines)
   }
 
   def gothia = {
     val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
-    val str = trav(xml \\ "table", Set("p", "br")).reverse
-    val lines = Source.fromString(str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Veckans")).mkString).getLines
+    val str = trav(xml \\ "table", Set("p", "br"))
+    val lines = str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Veckans"))
     group(lines)
   }
 
@@ -57,17 +57,17 @@ object Lunch {
     //val str = trav(xml \\ "table", Set("td")).reverse
     val table = (xml \\ "tbody")(0) \ "tr"
     val tds = table.flatMap((x) => (x \ "td")(1) ++ <br/>)
-    trav(tds, Set("br")).reverse
+    trav(tds, Set("br"))
   }
 
   def aran = {
     val xml = Web.get("http://www.rams.se/index.php?page=mod_matsedel", "ISO-8859-1")
-    val str = trav(xml \\ "table", Set("tr")).reverse
-    val lines = Source.fromString(str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Dagens Pasta")).mkString).getLines
+    val str = trav(xml \\ "table", Set("tr"))
+    val lines = str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Dagens Pasta"))
     group(lines)
   }
 
-  private def group(lines: Iterator[String]) = {
+  private def group(lines: Iterable[String]) = {
     lines.foldLeft(List(): List[List[String]])((acc, line) => {
       if (days.contains(line)) {
         List() :: acc
