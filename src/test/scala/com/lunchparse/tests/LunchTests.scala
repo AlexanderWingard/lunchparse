@@ -52,5 +52,20 @@ class LunchTest extends Spec with ShouldMatchers {
       val expected = List("Hello World")
       result should equal (expected)
     }
+    
+    it("Should group days correctly") (pending) /* {
+      val in = List("Måndag",
+		    "apa",
+		    "Tisdag",
+		    "Gris",
+		    "Onsdag",
+		    "Kossa",
+		    "Torsdag",
+		    "Fisk",
+		    "Fredag",
+		    "Aj")
+      val in2 = Lunch.date(32, 2011)
+      Lunch.group(in) should equal (List())
+    } */
   }
 }

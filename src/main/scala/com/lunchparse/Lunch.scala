@@ -6,6 +6,7 @@ import scala.xml._
 import java.net.URL
 import scala.collection
 import scala.collection.JavaConversions._
+import scala.util.matching.Regex
 
 import java.util.{ TimeZone, Calendar }
 import java.text.SimpleDateFormat
@@ -14,6 +15,19 @@ object Lunch {
   System.setProperty("http.proxyHost", "www-proxy.ericsson.se")
   System.setProperty("http.proxyPort", "8080")
   val days = List("M\345ndag", "Tisdag", "Onsdag", "Torsdag", "Fredag")
+
+  def getDates(lines: Iterable[String], regex: String) = {
+    val weekExp = new Regex(regex)
+    val week = lines.find(weekExp.findFirstMatchIn(_).isDefined)
+    week match {
+      case Some(weekExp(w, y)) =>
+	date(w.toInt, y.toInt)
+      case Some(weekExp(w)) =>
+	date(w.toInt, 2011)
+      case None =>
+	days.map((_, "xx/xx"))
+    }
+  }
 
   def date(week: Int, year: Int) = {
     val tz = TimeZone.getTimeZone("Europe/Stockholm")
@@ -41,15 +55,17 @@ object Lunch {
     val xml = Web.get("http://www.kvartersmenyn.se/start/rest/11579")
     val lineBreaks = Set("p", "h2", "strong", "u")
     val str = trav(xml \\ "table", lineBreaks)
+    val dates = getDates(str, """Vecka (\d+),\s+(\d+)""")
     val lines = str.dropWhile(!days.contains(_)).takeWhile(!_.contains("Varje dag"))
-    group(lines)
+    group(lines, dates)
   }
 
   def gothia = {
     val xml = Web.get("http://www.restauranggothia.com/lunch.htm")
     val str = trav(xml \\ "table", Set("p", "br"))
+    val dates = getDates(str, """Meny V\. (\d+)""")
     val lines = str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Veckans"))
-    group(lines)
+    group(lines, dates)
   }
 
   def bistrot = {
@@ -63,19 +79,21 @@ object Lunch {
   def aran = {
     val xml = Web.get("http://www.rams.se/index.php?page=mod_matsedel", "ISO-8859-1")
     val str = trav(xml \\ "table", Set("tr"))
+    val dates = getDates(str, """.* vecka (\d+)""")
     val lines = str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Dagens Pasta"))
-    group(lines)
+    group(lines, dates)
   }
 
-  private def group(lines: Iterable[String]) = {
-    lines.foldLeft(List(): List[List[String]])((acc, line) => {
-      if (days.contains(line)) {
-        List() :: acc
+  def group(lines: Iterable[String], dates : List[(String, String)]) = {
+    lines.foldLeft((List(): List[List[String]], dates))((acc, line) => {
+      val (lst, date) = acc
+      if (date.exists(_._1 == line)) {
+        ((List(date.head._2) :: lst), date.tail)
       } else {
-        val hd :: tl = acc
-        (line :: hd) :: tl
+        val hd :: tl = lst
+        ((line :: hd) :: tl, date)
       }
-    }).map(_.reverse).reverse
+    })._1.map(_.reverse).reverse
   }
 
   def trav(nodes: NodeSeq, lineBreaks: Set[String]): List[String] = trav(nodes, lineBreaks, true, List())._1.reverse
