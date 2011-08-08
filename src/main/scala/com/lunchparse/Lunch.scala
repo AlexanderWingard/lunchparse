@@ -46,9 +46,22 @@ object Lunch {
   def menu = {
     days.foldLeft((gotaAlv, gothia, aran, NodeSeq.Empty))((acc, day) => {
       val (gota :: gotatl, goth :: gothtl, ar :: artl, res) = acc
-      val res2 = res ++ <div><h2>{ day }</h2><h3>Ericsson Restaurant</h3><pre>{ gota.mkString("\n").toLowerCase }</pre><h3>Gothia</h3><pre>{ goth.mkString("\n").toLowerCase }</pre><h3>Aran</h3><pre>{ ar.mkString("\n").toLowerCase }</pre></div>
+      val res2 = res ++
+<div>
+      <h2>{ day }</h2>
+      <h3>Ericsson Restaurant</h3>
+      { gota.map((line) => {<div>{capitalize(line)}</div> })}
+      <h3>Gothia</h3>
+      { goth.map((line) => {<div>{capitalize(line)}</div> })}
+      <h3>Aran</h3>
+      { ar.map((line) => {<div>{capitalize(line)}</div> })}
+</div>
       (gotatl, gothtl, artl, res2)
     })._4
+  }
+
+  def capitalize(str : String) : String = {
+    str.head.toString.toUpperCase + str.tail.toLowerCase
   }
 
   def gotaAlv = {
