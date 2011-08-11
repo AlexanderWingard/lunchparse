@@ -44,8 +44,8 @@ object Lunch {
   }
 
   def menu = {
-    days.foldLeft((gotaAlv, gothia, aran, NodeSeq.Empty))((acc, day) => {
-      val (gota :: gotatl, goth :: gothtl, ar :: artl, res) = acc
+    days.foldLeft((gotaAlv, gothia, aran, lskitch, NodeSeq.Empty))((acc, day) => {
+      val (gota :: gotatl, goth :: gothtl, ar :: artl, ls :: lstl, res) = acc
       val res2 = res ++
 <div>
       <h2>{ day }</h2>
@@ -55,9 +55,11 @@ object Lunch {
       { goth.map((line) => {<div>{capitalize(line)}</div> })}
       <h3>Aran</h3>
       { ar.map((line) => {<div>{capitalize(line)}</div> })}
+      <h3>L's Kitchen</h3>
+      { ls.map((line) => {<div>{capitalize(line)}</div> })}
 </div>
-      (gotatl, gothtl, artl, res2)
-    })._4
+      (gotatl, gothtl, artl, lstl, res2)
+    })._5
   }
 
   def capitalize(str : String) : String = {
@@ -94,6 +96,14 @@ object Lunch {
     val str = trav(xml \\ "table", Set("tr"))
     val dates = getDates(str, """.* vecka (\d+)""")
     val lines = str.dropWhile(!days.contains(_)).takeWhile(!_.startsWith("Dagens Pasta"))
+    group(lines, dates)
+  }
+
+  def lskitch = {
+    val xml = Web.get("http://www.chalmerskonferens.se/sv/Lindholmen/Restauranger-Cafeer/Veckans-luncher")
+    val str = trav(xml, Set("tr", "div"))
+    val dates = getDates(str, """Meny v\.(\d+)""")
+    val lines = str.dropWhile(!days.contains(_)).takeWhile(_ != "NYHETER")
     group(lines, dates)
   }
 
