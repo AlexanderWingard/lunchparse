@@ -19,25 +19,26 @@ object Lunch {
   def getDates(lines: Iterable[String], regex: String) = {
     val weekExp = new Regex(regex)
     val week = lines.find(weekExp.findFirstMatchIn(_).isDefined)
+    val sdf = new SimpleDateFormat("dd/MM")
+    val toString = (in : Calendar) =>  { sdf.format(in.getTime()) }
     week match {
       case Some(weekExp(w, y)) =>
-	date(w.toInt, y.toInt)
+	date(w.toInt, y.toInt, toString)
       case Some(weekExp(w)) =>
-	date(w.toInt, 2011)
+	date(w.toInt, 2011, toString)
       case None =>
 	days.map((_, "xx/xx"))
     }
   }
 
-  def date(week: Int, year: Int) = {
+  def date(week: Int, year: Int, resulter : (Calendar) => String) = {
     val tz = TimeZone.getTimeZone("Europe/Stockholm")
-    val sdf = new SimpleDateFormat("dd/MM")
     val cal = Calendar.getInstance(tz)
     cal.set(Calendar.YEAR, year)
     cal.set(Calendar.WEEK_OF_YEAR, week + 1)
     cal set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
     days.map((day) => {
-      val str = sdf.format(cal.getTime())
+      val str = resulter(cal)
       cal.add(Calendar.DAY_OF_WEEK, 1)
       (day,str)
     })
