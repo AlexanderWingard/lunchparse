@@ -23,19 +23,19 @@ object Lunch {
     val toString = (in : Calendar) =>  { sdf.format(in.getTime()) }
     week match {
       case Some(weekExp(w, y)) =>
-	date(w.toInt, y.toInt, toString)
+	date(Some(w.toInt), Some(y.toInt), toString)
       case Some(weekExp(w)) =>
-	date(w.toInt, 2011, toString)
+	date(Some(w.toInt), None, toString)
       case None =>
 	days.map((_, "xx/xx"))
     }
   }
 
-  def date(week: Int, year: Int, resulter : (Calendar) => String) = {
+  def date(week: Option[Int], year: Option[Int], resulter : (Calendar) => String) = {
     val tz = TimeZone.getTimeZone("Europe/Stockholm")
     val cal = Calendar.getInstance(tz)
-    cal.set(Calendar.YEAR, year)
-    cal.set(Calendar.WEEK_OF_YEAR, week + 1)
+    year.map(cal.set(Calendar.YEAR, _))
+    week.map((w : Int) => cal.set(Calendar.WEEK_OF_YEAR, w + 1))
     cal set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
     days.map((day) => {
       val str = resulter(cal)
@@ -45,8 +45,8 @@ object Lunch {
   }
 
   def menu = {
-    days.foldLeft((gotaAlv, gothia, aran, lskitch, NodeSeq.Empty))((acc, day) => {
-      val (gota :: gotatl, goth :: gothtl, ar :: artl, ls :: lstl, res) = acc
+    days.foldLeft((gotaAlv, gothia, aran, lskitch, bistrot, NodeSeq.Empty))((acc, day) => {
+      val (gota :: gotatl, goth :: gothtl, ar :: artl, ls :: lstl, bi :: bitl, res) = acc
       val res2 = res ++
 <div>
       <h2>{ day }</h2>
@@ -58,9 +58,11 @@ object Lunch {
       { ar.map((line) => {<div>{capitalize(line)}</div> })}
       <h3>L's Kitchen</h3>
       { ls.map((line) => {<div>{capitalize(line)}</div> })}
+      <h3>Bistrot</h3>
+      { bi.map((line) => {<div>{line}</div> })}
 </div>
-      (gotatl, gothtl, artl, lstl, res2)
-    })._5
+      (gotatl, gothtl, artl, lstl, bitl, res2)
+    })._6
   }
 
   def capitalize(str : String) : String = {
@@ -85,11 +87,23 @@ object Lunch {
   }
 
   def bistrot = {
-    val xml = Web.get("http://www.lindholmen.se/sv/dagens-lunch?keys=&field_restaurant_nid=166&date_filter%5Bvalue%5D%5Byear%5D=2011&date_filter%5Bvalue%5D%5Bmonth%5D=6&date_filter%5Bvalue%5D%5Bday%5D=1")
-    //val str = trav(xml \\ "table", Set("td")).reverse
-    val table = (xml \\ "tbody")(0) \ "tr"
-    val tds = table.flatMap((x) => (x \ "td")(1) ++ <br/>)
-    trav(tds, Set("br"))
+    val urlGen = (cal: Calendar) => {
+      val year = cal.get(Calendar.YEAR)
+      val month = cal.get(Calendar.MONTH) + 1
+      val day = cal.get(Calendar.DAY_OF_MONTH)
+      "http://www.lindholmen.se/sv/dagens-lunch?keys=&field_restaurant_nid=166&date_filter%5Bvalue%5D%5Byear%5D=" + year +"&date_filter%5Bvalue%5D%5Bmonth%5D="+ month +"&date_filter%5Bvalue%5D%5Bday%5D=" + day
+    }
+    
+    val wholeMenu = date(None, None, urlGen).flatMap((in: (String, String)) => {
+      val (day, url) = in
+      val xml = Web.get(url)
+      val table = (xml \\ "tbody")(0) \ "tr"
+      val tds = table.flatMap((x) => (x \ "td")(1) ++ <br/>)
+      day :: trav(tds, Set("br"))
+    })
+    val sdf = new SimpleDateFormat("dd/MM")
+    val dates = date(None, None, (cal : Calendar) => sdf.format(cal.getTime))
+    group(wholeMenu, dates)
   }
 
   def aran = {
