@@ -59,14 +59,17 @@ object Lunch {
       <h3>L's Kitchen</h3>
       { ls.map((line) => {<div>{capitalize(line)}</div> })}
       <h3>Bistrot</h3>
-      { bi.map((line) => {<div>{line}</div> })}
+      { bi.map((line) => {<div>{capitalize(line)}</div> })}
 </div>
       (gotatl, gothtl, artl, lstl, bitl, res2)
     })._6
   }
 
   def capitalize(str : String) : String = {
-    str.head.toString.toUpperCase + str.tail.toLowerCase
+    if(str.length > 1)
+	str.head.toString.toUpperCase + str.tail.toLowerCase	
+    else
+      str
   }
 
   def gotaAlv = {
